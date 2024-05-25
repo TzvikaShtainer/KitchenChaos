@@ -7,9 +7,60 @@ public class Player : MonoBehaviour
 {
     [SerializeField] float moveSpeed = 7f;
     [SerializeField] private GameInput _gameInput;
+    [SerializeField] private LayerMask counterLayerMask;
 
-    private bool isWalking;
+    private bool _isWalking;
+    private Vector3 _lastInteractDir;
+
+    private void Start()
+    {
+        GameInput.OnInteractAction += GameInput_OnInteractAction;
+    }
+
+    private void GameInput_OnInteractAction(object sender, EventArgs e)
+    {
+        Vector2 inputVector = _gameInput.GetMovementVectorNormalized();
+
+        Vector3 moveDir = new Vector3(inputVector.x, 0, inputVector.y);
+
+        if (moveDir != Vector3.zero)
+            _lastInteractDir = moveDir;
+        
+        float interactDistance = 2f;
+        if (Physics.Raycast(transform.position, _lastInteractDir, out RaycastHit raycastHit, interactDistance, counterLayerMask))
+        {
+            if(raycastHit.transform.TryGetComponent(out ClearCounter clearCounter))
+                clearCounter.Interact();
+                
+        }
+    }
+
     private void Update()
+    {
+        HandleMovement();
+        HandleInteraction();
+    }
+
+    private void HandleInteraction()
+    {
+        Vector2 inputVector = _gameInput.GetMovementVectorNormalized();
+
+        Vector3 moveDir = new Vector3(inputVector.x, 0, inputVector.y);
+
+        if (moveDir != Vector3.zero)
+            _lastInteractDir = moveDir;
+        
+        float interactDistance = 2f;
+        if (Physics.Raycast(transform.position, _lastInteractDir, out RaycastHit raycastHit, interactDistance, counterLayerMask))
+        {
+            if (raycastHit.transform.TryGetComponent(out ClearCounter clearCounter))
+            {
+               //clearCounter.Interact();
+            }
+        }
+    }
+
+    void HandleMovement()
     {
         Vector2 inputVector = _gameInput.GetMovementVectorNormalized();
 
@@ -50,14 +101,16 @@ public class Player : MonoBehaviour
             
         }
 
-        isWalking = moveDir != Vector3.zero;
+        _isWalking = moveDir != Vector3.zero;
         
         float rotateSpeed = 10f;
         transform.forward = Vector3.Slerp(transform.forward, moveDir, Time.deltaTime * rotateSpeed);
     }
-
+    
     public bool IsWalking()
     {
-        return isWalking;
+        return _isWalking;
     }
+    
+    
 }
