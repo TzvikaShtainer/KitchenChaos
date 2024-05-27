@@ -5,34 +5,41 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
+    public static Player Instance { get; private set; }
+    public event EventHandler<OnSelectedCounterChangedEventHandler> OnSelectedCounterChanged;
+
+    public class OnSelectedCounterChangedEventHandler : EventArgs
+    {
+        public ClearCounter SelectedCounter;
+    }
+    
     [SerializeField] float moveSpeed = 7f;
     [SerializeField] private GameInput _gameInput;
     [SerializeField] private LayerMask counterLayerMask;
 
     private bool _isWalking;
     private Vector3 _lastInteractDir;
+    private ClearCounter _selectedCounter;
+
+
+    private void Awake()
+    {
+        if (Instance != null)
+        {
+            Debug.Log("There is more then 1 player");
+        }
+        Instance = this;
+    }
 
     private void Start()
     {
-        GameInput.OnInteractAction += GameInput_OnInteractAction;
+        _gameInput.OnInteractAction += GameInput_OnInteractAction;
     }
 
     private void GameInput_OnInteractAction(object sender, EventArgs e)
     {
-        Vector2 inputVector = _gameInput.GetMovementVectorNormalized();
-
-        Vector3 moveDir = new Vector3(inputVector.x, 0, inputVector.y);
-
-        if (moveDir != Vector3.zero)
-            _lastInteractDir = moveDir;
-        
-        float interactDistance = 2f;
-        if (Physics.Raycast(transform.position, _lastInteractDir, out RaycastHit raycastHit, interactDistance, counterLayerMask))
-        {
-            if(raycastHit.transform.TryGetComponent(out ClearCounter clearCounter))
-                clearCounter.Interact();
-                
-        }
+        if (_selectedCounter != null)
+            _selectedCounter.Interact();
     }
 
     private void Update()
@@ -55,9 +62,18 @@ public class Player : MonoBehaviour
         {
             if (raycastHit.transform.TryGetComponent(out ClearCounter clearCounter))
             {
-               //clearCounter.Interact();
+                if (clearCounter != _selectedCounter)
+                {
+                    SetSelectedCounter(clearCounter);
+                }
             }
+            else
+                SetSelectedCounter(null);
         }
+        else
+            SetSelectedCounter(null);
+
+        //Debug.Log(_selectedCounter);
     }
 
     void HandleMovement()
@@ -111,6 +127,11 @@ public class Player : MonoBehaviour
     {
         return _isWalking;
     }
-    
+
+    private void SetSelectedCounter(ClearCounter selectedCounter)
+    {
+        _selectedCounter = selectedCounter;
+        OnSelectedCounterChanged?.Invoke(this,new OnSelectedCounterChangedEventHandler{SelectedCounter = _selectedCounter});
+    }
     
 }

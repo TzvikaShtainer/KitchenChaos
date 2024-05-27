@@ -6,7 +6,7 @@ using UnityEngine.InputSystem;
 
 public class GameInput : MonoBehaviour
 {
-    public static event EventHandler OnInteractAction; //why not static dont work
+    public event EventHandler OnInteractAction; //why not static dont work
     
     private PlayerInput playerInputActions;
     
