@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Player : MonoBehaviour
+public class Player : MonoBehaviour, IKitchenObjectParent
 {
     public static Player Instance { get; private set; }
     public event EventHandler<OnSelectedCounterChangedEventHandler> OnSelectedCounterChanged;
@@ -16,10 +16,12 @@ public class Player : MonoBehaviour
     [SerializeField] float moveSpeed = 7f;
     [SerializeField] private GameInput _gameInput;
     [SerializeField] private LayerMask counterLayerMask;
+    [SerializeField] private Transform kitchenObjectHoldPoint;
 
     private bool _isWalking;
     private Vector3 _lastInteractDir;
     private ClearCounter _selectedCounter;
+    private KitchenObject _kitchenObject;
 
 
     private void Awake()
@@ -39,7 +41,7 @@ public class Player : MonoBehaviour
     private void GameInput_OnInteractAction(object sender, EventArgs e)
     {
         if (_selectedCounter != null)
-            _selectedCounter.Interact();
+            _selectedCounter.Interact(this);
     }
 
     private void Update()
@@ -72,8 +74,7 @@ public class Player : MonoBehaviour
         }
         else
             SetSelectedCounter(null);
-
-        //Debug.Log(_selectedCounter);
+        
     }
 
     void HandleMovement()
@@ -133,5 +134,29 @@ public class Player : MonoBehaviour
         _selectedCounter = selectedCounter;
         OnSelectedCounterChanged?.Invoke(this,new OnSelectedCounterChangedEventHandler{SelectedCounter = _selectedCounter});
     }
-    
+
+    public Transform GetKitchenObjectFollowTransform()
+    {
+        return kitchenObjectHoldPoint;
+    }
+
+    public void SetKitchenObject(KitchenObject kitchenObject)
+    {
+        _kitchenObject = kitchenObject;
+    }
+
+    public KitchenObject GetKitchenObject()
+    {
+        return _kitchenObject;
+    }
+
+    public void ClearKitchenObject()
+    {
+        _kitchenObject = null;
+    }
+
+    public bool HasKitchenObject()
+    {
+        return _kitchenObject != null;
+    }
 }
