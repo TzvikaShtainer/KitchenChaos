@@ -23,7 +23,7 @@ public class PlateCounter : BaseCounter, IKitchenObjectParent
         {
             spawnPlateTimer = 0;
 
-            if (plateSpawnAmount < spawnPlateTimerMax)
+            if (plateSpawnAmount < plateSpawnAmountMax)
             {
                 plateSpawnAmount++;
                 
