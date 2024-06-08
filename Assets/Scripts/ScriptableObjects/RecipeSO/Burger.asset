@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   KitchenObjectSoList:
   - {fileID: 11400000, guid: 193f719429be9814cb70689ca6c00ae6, type: 2}
-  - {fileID: 11400000, guid: 223d8e30da3b66e46a221f95652cfef4, type: 2}
+  - {fileID: 11400000, guid: 2ade9b3424889cd47a7d8ebcf0c26947, type: 2}
   recipeName: Burger

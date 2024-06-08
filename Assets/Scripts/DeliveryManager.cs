@@ -2,15 +2,19 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
 
 public class DeliveryManager : MonoBehaviour
 {
     public static DeliveryManager Instance { get; private set; }
 
+    public event EventHandler OnRecipeSpawned;
+    public event EventHandler OnRecipeCompleted;
+
     [SerializeField] private RecipeListSO recipeListSo;
     
-    [SerializeField] private List<RecipeSO> WaitingRecipeSoList;
+    [SerializeField] private List<RecipeSO> waitingRecipeSoList;
     private float spawnRecipeTimer;
     private float spawnRecipeTimerMax = 4f;
     private int WaitingRecipeSoListMax = 4;
@@ -18,7 +22,7 @@ public class DeliveryManager : MonoBehaviour
     {
         Instance = this;
         
-        WaitingRecipeSoList = new List<RecipeSO>();
+        waitingRecipeSoList = new List<RecipeSO>();
     }
 
     private void Update()
@@ -29,20 +33,22 @@ public class DeliveryManager : MonoBehaviour
         {
             spawnRecipeTimer = spawnRecipeTimerMax;
 
-            if (WaitingRecipeSoList.Count < WaitingRecipeSoListMax)
+            if (waitingRecipeSoList.Count < WaitingRecipeSoListMax)
             {
                 RecipeSO waitingRecipeSO = recipeListSo.RecipeSOList[Random.Range(0, recipeListSo.RecipeSOList.Count)];
-                WaitingRecipeSoList.Add(waitingRecipeSO);
-                Debug.Log(waitingRecipeSO.name);
+                
+                waitingRecipeSoList.Add(waitingRecipeSO);
+                
+                OnRecipeSpawned?.Invoke(this, EventArgs.Empty);
             }
         }
     }
 
     public void DeliverRecipe(PlateKitchenObject plateKitchenObject)
     {
-        for (int i = 0; i < WaitingRecipeSoList.Count; i++)
+        for (int i = 0; i < waitingRecipeSoList.Count; i++)
         {
-            RecipeSO waitingRecipeSO = WaitingRecipeSoList[i];
+            RecipeSO waitingRecipeSO = waitingRecipeSoList[i];
 
             if (waitingRecipeSO.KitchenObjectSoList.Count == plateKitchenObject.GetKitchenObjectSoList().Count)
             {
@@ -76,8 +82,10 @@ public class DeliveryManager : MonoBehaviour
                 if (plateContentsMatchesRecipe)
                 {
                     //player deliver correct recipe
-                    Debug.Log("player deliver correct recipe");
-                    WaitingRecipeSoList.RemoveAt(i);
+                    waitingRecipeSoList.RemoveAt(i);
+                    
+                    OnRecipeCompleted?.Invoke(this, EventArgs.Empty);
+                    
                     return;
                 }
             }
@@ -85,5 +93,10 @@ public class DeliveryManager : MonoBehaviour
         
         //no matches found
         Debug.Log("player didnt deliver a correct recipe");
+    }
+
+    public List<RecipeSO> GetWaitingRecipeSoList()
+    {
+        return waitingRecipeSoList;
     }
 }
