@@ -7,6 +7,11 @@ using UnityEngine.Video;
 public class CuttingCounter : BaseCounter, IHasProgress
 {
     public static event EventHandler OnAnyCut; //for sound effects
+    
+    public static void ResetStaticData()
+    {
+        OnAnyCut = null;
+    }
     public event EventHandler<IHasProgress.OnProgressChangedArgs> OnProgressChanged;
 
     public event EventHandler OnCut;
